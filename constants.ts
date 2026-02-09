@@ -14,8 +14,10 @@ export const INITIAL_COINS = [
 ];
 
 export const COLORS = {
-  profit: '#10b981', // emerald-500
-  loss: '#ef4444',   // red-500
-  neutral: '#64748b', // slate-500
-  accent: '#6366f1',  // indigo-500
+  brand: '#0d3e62',      // Deep Blue: Structure, Primary Text, Strong Borders
+  accent: '#76c6ff',     // Sky Blue: Actions, Success Support, Focus
+  surface: '#ebf2fa',    // Light Section: Secondary BG, Cards
+  white: '#ffffff',      // Primary BG: Main and global
+  highlight: '#ff88e5',  // Pink: Toggles, Good Outcomes, Energy
+  risk: '#703594',       // Purple: Loss, Warnings, Metadata
 };

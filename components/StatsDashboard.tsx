@@ -56,15 +56,15 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
   }, [trades]);
 
   const winLossData = [
-    { name: 'Ganancias', value: stats.profitCount, color: COLORS.profit },
-    { name: 'Pérdidas', value: stats.lossCount, color: COLORS.loss },
+    { name: 'Ganancias', value: stats.profitCount, color: COLORS.accent },
+    { name: 'Pérdidas', value: stats.lossCount, color: COLORS.risk },
   ];
 
   if (trades.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-        <p className="text-sm">Aún no hay datos para mostrar estadísticas.</p>
-        <p className="text-xs mt-2">Registra tu primera operación para comenzar.</p>
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-sm font-bold" style={{ color: COLORS.brand }}>Aún no hay datos.</p>
+        <p className="text-xs mt-2 font-bold" style={{ color: COLORS.risk + '80' }}>Registra tu primera operación para comenzar.</p>
       </div>
     );
   }
@@ -72,28 +72,28 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
   return (
     <div className="space-y-6 pb-12">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Trades</p>
-          <p className="text-2xl font-bold text-slate-800">{stats.totalTrades}</p>
+        <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.brand }}>
+          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>Total Trades</p>
+          <p className="text-2xl font-bold" style={{ color: COLORS.brand }}>{stats.totalTrades}</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Win Rate</p>
-          <p className="text-2xl font-bold text-emerald-500">{stats.winRate.toFixed(1)}%</p>
+        <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.accent }}>
+          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>Win Rate</p>
+          <p className="text-2xl font-bold" style={{ color: COLORS.accent }}>{stats.winRate.toFixed(1)}%</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Estrategia Ok</p>
-          <p className="text-2xl font-bold text-indigo-500">{stats.goodExecutionRate.toFixed(0)}%</p>
+        <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.highlight }}>
+          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>Disciplina</p>
+          <p className="text-2xl font-bold" style={{ color: COLORS.highlight }}>{stats.goodExecutionRate.toFixed(0)}%</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">P/L Promedio</p>
-          <p className={`text-2xl font-bold ${stats.avgPnl >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-            ${stats.avgPnl.toFixed(2)}
+        <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.risk }}>
+          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>P/L Promedio</p>
+          <p className="text-2xl font-bold" style={{ color: stats.avgPnl >= 0 ? COLORS.accent : COLORS.risk }}>
+            ${stats.avgPnl.toFixed(1)}
           </p>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <h3 className="text-sm font-bold text-slate-700 mb-4">Ratio Ganancias / Pérdidas</h3>
+      <div className="bg-white p-5 rounded-xl border-2" style={{ borderColor: COLORS.surface }}>
+        <h3 className="text-sm font-bold mb-4 uppercase tracking-tighter" style={{ color: COLORS.brand }}>Win / Loss Ratio</h3>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -105,7 +105,7 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
                 dataKey="value"
               >
                 {winLossData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={2} stroke={COLORS.white} />
                 ))}
               </Pie>
               <Tooltip />
@@ -114,44 +114,27 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
         </div>
         <div className="flex justify-center gap-6 mt-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            <span className="text-xs text-slate-600">Ganancias</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.accent }}></div>
+            <span className="text-[10px] font-bold" style={{ color: COLORS.brand }}>GANANCIAS</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-xs text-slate-600">Pérdidas</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.risk }}></div>
+            <span className="text-[10px] font-bold" style={{ color: COLORS.brand }}>PÉRDIDAS</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <h3 className="text-sm font-bold text-slate-700 mb-4">Activos más operados</h3>
+      <div className="bg-white p-5 rounded-xl border-2" style={{ borderColor: COLORS.surface }}>
+        <h3 className="text-sm font-bold mb-4 uppercase tracking-tighter" style={{ color: COLORS.brand }}>Distribución Activos</h3>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={stats.topAssets} layout="vertical" margin={{ left: -20 }}>
               <XAxis type="number" hide />
-              <YAxis dataKey="asset" type="category" width={60} style={{ fontSize: '10px' }} />
-              <Tooltip cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="count" fill={COLORS.accent} radius={[0, 4, 4, 0]} />
+              <YAxis dataKey="asset" type="category" width={60} style={{ fontSize: '10px', fontWeight: 'bold', fill: COLORS.brand }} />
+              <Tooltip cursor={{ fill: COLORS.surface }} />
+              <Bar dataKey="count" fill={COLORS.brand} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Uso de Stop Loss</p>
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div className="bg-emerald-400 h-full" style={{ width: `${stats.slUsageRate}%` }}></div>
-          </div>
-          <p className="text-sm font-bold text-slate-800 mt-1">{stats.slUsageRate.toFixed(0)}%</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Uso de Take Profit</p>
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div className="bg-emerald-400 h-full" style={{ width: `${stats.tpUsageRate}%` }}></div>
-          </div>
-          <p className="text-sm font-bold text-slate-800 mt-1">{stats.tpUsageRate.toFixed(0)}%</p>
         </div>
       </div>
     </div>
