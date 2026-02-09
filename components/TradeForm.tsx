@@ -16,6 +16,11 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
   const [availableCoins, setAvailableCoins] = useState<Coin[]>([]);
   const [showAssetResults, setShowAssetResults] = useState(false);
   
+  // Use strings for price and pnl state to maintain precision while typing (especially for leading zeros)
+  const [entryPriceStr, setEntryPriceStr] = useState(initialData?.entryPrice?.toString() || '');
+  const [exitPriceStr, setExitPriceStr] = useState(initialData?.exitPrice?.toString() || '');
+  const [pnlStr, setPnlStr] = useState(initialData?.pnl?.toString() || '');
+
   const [formData, setFormData] = useState<Partial<Trade>>(initialData || {
     type: 'long',
     leverage: 1,
@@ -60,7 +65,7 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.asset || !formData.entryPrice || formData.pnl === undefined) {
+    if (!formData.asset || !entryPriceStr || pnlStr === '') {
       alert("Por favor completa los campos obligatorios (Activo, Entrada y P/L).");
       return;
     }
@@ -69,9 +74,9 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
       id: initialData?.id || crypto.randomUUID(),
       asset: formData.asset!,
       type: (formData.type as TradeType) || 'long',
-      entryPrice: Number(formData.entryPrice),
-      exitPrice: formData.exitPrice ? Number(formData.exitPrice) : undefined,
-      pnl: Number(formData.pnl),
+      entryPrice: Number(entryPriceStr),
+      exitPrice: exitPriceStr ? Number(exitPriceStr) : undefined,
+      pnl: Number(pnlStr),
       leverage: Number(formData.leverage) || 1,
       usedStopLoss: !!formData.usedStopLoss,
       usedTakeProfit: !!formData.usedTakeProfit,
@@ -178,8 +183,8 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
             <input
               type="number"
               step="any"
-              value={formData.entryPrice || ''}
-              onChange={(e) => setFormData({ ...formData, entryPrice: Number(e.target.value) })}
+              value={entryPriceStr}
+              onChange={(e) => setEntryPriceStr(e.target.value)}
               className="w-full bg-white border-2 rounded-lg p-2.5 text-sm outline-none focus:border-[#76c6ff]"
               style={{ color: COLORS.brand, borderColor: COLORS.surface }}
               placeholder="0.00"
@@ -191,8 +196,8 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
             <input
               type="number"
               step="any"
-              value={formData.exitPrice || ''}
-              onChange={(e) => setFormData({ ...formData, exitPrice: Number(e.target.value) })}
+              value={exitPriceStr}
+              onChange={(e) => setExitPriceStr(e.target.value)}
               className="w-full bg-white border-2 rounded-lg p-2.5 text-sm outline-none focus:border-[#76c6ff]"
               style={{ color: COLORS.brand, borderColor: COLORS.surface }}
               placeholder="0.00"
@@ -228,11 +233,11 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
           <input
             type="number"
             step="any"
-            value={formData.pnl || ''}
-            onChange={(e) => setFormData({ ...formData, pnl: Number(e.target.value) })}
+            value={pnlStr}
+            onChange={(e) => setPnlStr(e.target.value)}
             className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-base outline-none font-black transition-all focus:border-[#76c6ff]"
             style={{ 
-              color: formData.pnl && formData.pnl >= 0 ? COLORS.accent : COLORS.risk,
+              color: Number(pnlStr) >= 0 ? COLORS.accent : COLORS.risk,
               borderColor: COLORS.surface 
             }}
             placeholder="Ej: 150.50 o -50.00"

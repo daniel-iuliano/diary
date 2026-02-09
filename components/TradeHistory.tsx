@@ -10,6 +10,14 @@ interface Props {
   onEdit: (trade: Trade) => void;
 }
 
+const formatPrice = (price: number): string => {
+  // Use a high maximumFractionDigits to support micro-priced tokens common in crypto
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 18,
+  }).format(price);
+};
+
 const TradeCard: React.FC<{ trade: Trade; onDelete: (id: string) => void; onEdit: (trade: Trade) => void }> = ({ trade, onDelete, onEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const isProfit = trade.pnl >= 0;
@@ -66,10 +74,19 @@ const TradeCard: React.FC<{ trade: Trade; onDelete: (id: string) => void; onEdit
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <p className="text-[10px] font-bold uppercase" style={{ color: COLORS.risk + '80' }}>Entrada</p>
-              <p className="text-xs font-bold" style={{ color: COLORS.brand }}>${trade.entryPrice.toLocaleString()}</p>
+              <p className="text-xs font-bold" style={{ color: COLORS.brand }}>${formatPrice(trade.entryPrice)}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase" style={{ color: COLORS.risk + '80' }}>Cierre</p>
+              <p className="text-xs font-bold" style={{ color: COLORS.brand }}>
+                {trade.exitPrice ? `$${formatPrice(trade.exitPrice)}` : 'N/A'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase" style={{ color: COLORS.risk + '80' }}>Fecha de Cierre</p>
               <p className="text-xs font-bold" style={{ color: COLORS.brand }}>{formatDate(trade.endDate)}</p>
             </div>
           </div>
