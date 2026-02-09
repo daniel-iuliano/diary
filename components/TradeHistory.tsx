@@ -46,12 +46,12 @@ const TradeCard: React.FC<{ trade: Trade; onDelete: (id: string) => void; onEdit
             <div className="flex justify-end mt-0.5">
               {trade.outcome === 'good' ? (
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] font-bold uppercase" style={{ color: COLORS.accent }}>ESTRATEGIA OK</span>
+                  <span className="text-[8px] font-bold uppercase" style={{ color: COLORS.accent }}>ACERTADA</span>
                   <CheckCircle className="w-3 h-3" style={{ color: COLORS.accent }} />
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] font-bold uppercase" style={{ color: COLORS.risk }}>SIN DISCIPLINA</span>
+                  <span className="text-[8px] font-bold uppercase" style={{ color: COLORS.risk }}>NO ACERTADA</span>
                   <XCircle className="w-3 h-3" style={{ color: COLORS.risk }} />
                 </div>
               )}

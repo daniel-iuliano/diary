@@ -81,7 +81,7 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
           <p className="text-2xl font-bold" style={{ color: COLORS.accent }}>{stats.winRate.toFixed(1)}%</p>
         </div>
         <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.highlight }}>
-          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>Disciplina</p>
+          <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>Acertada</p>
           <p className="text-2xl font-bold" style={{ color: COLORS.highlight }}>{stats.goodExecutionRate.toFixed(0)}%</p>
         </div>
         <div className="p-4 rounded-xl border-2 shadow-sm" style={{ backgroundColor: COLORS.surface, borderColor: COLORS.risk }}>

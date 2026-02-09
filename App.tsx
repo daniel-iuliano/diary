@@ -93,6 +93,11 @@ const App: React.FC = () => {
     }
   };
 
+  // Helper to toggle the settings tab
+  const toggleSettings = () => {
+    setActiveTab((current) => (current === 'settings' ? 'history' : 'settings'));
+  };
+
   return (
     <div className="max-w-md mx-auto min-h-screen bg-white flex flex-col relative pb-20 overflow-x-hidden border-x" style={{ borderColor: COLORS.surface }}>
       {/* Feedback Toast */}
@@ -116,9 +121,10 @@ const App: React.FC = () => {
             <p className="text-[10px] font-bold uppercase tracking-widest opacity-80" style={{ color: COLORS.risk }}>Trading Diario</p>
           </div>
           <button 
-            onClick={() => setActiveTab('settings')}
+            onClick={toggleSettings}
             className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'bg-[#ebf2fa]' : 'hover:bg-[#ebf2fa]'}`}
             style={{ color: activeTab === 'settings' ? COLORS.brand : COLORS.risk }}
+            aria-label="Configuración"
           >
             <CogIcon />
           </button>

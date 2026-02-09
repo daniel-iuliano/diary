@@ -60,8 +60,8 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.asset || !formData.entryPrice || !formData.pnl) {
-      alert("Por favor completa los campos obligatorios.");
+    if (!formData.asset || !formData.entryPrice || formData.pnl === undefined) {
+      alert("Por favor completa los campos obligatorios (Activo, Entrada y P/L).");
       return;
     }
 
@@ -70,7 +70,7 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
       asset: formData.asset!,
       type: (formData.type as TradeType) || 'long',
       entryPrice: Number(formData.entryPrice),
-      exitPrice: Number(formData.exitPrice) || undefined,
+      exitPrice: formData.exitPrice ? Number(formData.exitPrice) : undefined,
       pnl: Number(formData.pnl),
       leverage: Number(formData.leverage) || 1,
       usedStopLoss: !!formData.usedStopLoss,
@@ -90,190 +90,230 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
   ).slice(0, 5);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 pb-24">
-      {/* Activo / Par */}
-      <div className="relative">
-        <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Activo (ej: BTC, ETH)</label>
-        <input
-          type="text"
-          value={assetSearch}
-          onChange={(e) => { setAssetSearch(e.target.value); setShowAssetResults(true); }}
-          onFocus={() => setShowAssetResults(true)}
-          placeholder="Buscar o añadir..."
-          className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-sm outline-none transition-all focus:border-[#76c6ff]"
-          style={{ color: COLORS.brand, borderColor: COLORS.surface }}
-          required
-        />
-        {showAssetResults && assetSearch && (
-          <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-xl max-h-48 overflow-y-auto" style={{ borderColor: COLORS.brand }}>
-            {filteredCoins.map(coin => (
-              <button
-                key={coin.id}
-                type="button"
-                onClick={() => handleAssetSelect(coin)}
-                className="w-full text-left p-3 text-sm hover:bg-[#ebf2fa] border-b last:border-0"
-                style={{ color: COLORS.brand, borderColor: COLORS.surface }}
-              >
-                <span className="font-bold">{coin.symbol}</span> - {coin.name}
-              </button>
-            ))}
-            {filteredCoins.length === 0 && (
-              <button
-                type="button"
-                onClick={handleAddCustomAsset}
-                className="w-full text-left p-3 text-sm font-bold hover:bg-[#ebf2fa]"
-                style={{ color: COLORS.highlight }}
-              >
-                + Añadir "{assetSearch.toUpperCase()}" manualmente
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Tipo de Operación y Apalancamiento */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Tipo</label>
-          <div className="flex bg-[#ebf2fa] p-1 rounded-lg border-2" style={{ borderColor: COLORS.surface }}>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: 'long' })}
-              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${formData.type === 'long' ? 'bg-white shadow-sm' : ''}`}
-              style={{ color: formData.type === 'long' ? COLORS.accent : COLORS.brand }}
-            >
-              LONG
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: 'short' })}
-              className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${formData.type === 'short' ? 'bg-white shadow-sm' : ''}`}
-              style={{ color: formData.type === 'short' ? COLORS.risk : COLORS.brand }}
-            >
-              SHORT
-            </button>
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Apalancamiento</label>
+    <form onSubmit={handleSubmit} className="space-y-6 pb-24">
+      {/* SECCIÓN 1: CONFIGURACIÓN */}
+      <div className="space-y-4">
+        <div className="relative">
+          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Activo (ej: BTC, ETH)</label>
           <input
-            type="number"
-            value={formData.leverage}
-            onChange={(e) => setFormData({ ...formData, leverage: Number(e.target.value) })}
-            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-2.5 text-sm outline-none transition-all focus:border-[#76c6ff]"
+            type="text"
+            value={assetSearch}
+            onChange={(e) => { setAssetSearch(e.target.value); setShowAssetResults(true); }}
+            onFocus={() => setShowAssetResults(true)}
+            placeholder="Buscar..."
+            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-sm outline-none transition-all focus:border-[#76c6ff]"
             style={{ color: COLORS.brand, borderColor: COLORS.surface }}
-            min="1"
-            max="125"
-          />
-        </div>
-      </div>
-
-      {/* Precios y P/L */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Precio Entrada</label>
-          <input
-            type="number"
-            step="any"
-            value={formData.entryPrice || ''}
-            onChange={(e) => setFormData({ ...formData, entryPrice: Number(e.target.value) })}
-            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-2.5 text-sm outline-none transition-all focus:border-[#76c6ff]"
-            style={{ color: COLORS.brand, borderColor: COLORS.surface }}
-            placeholder="0.00"
             required
           />
+          {showAssetResults && assetSearch && (
+            <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-xl max-h-48 overflow-y-auto" style={{ borderColor: COLORS.brand }}>
+              {filteredCoins.map(coin => (
+                <button
+                  key={coin.id}
+                  type="button"
+                  onClick={() => handleAssetSelect(coin)}
+                  className="w-full text-left p-3 text-sm hover:bg-[#ebf2fa] border-b last:border-0"
+                  style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+                >
+                  <span className="font-bold">{coin.symbol}</span> - {coin.name}
+                </button>
+              ))}
+              {filteredCoins.length === 0 && (
+                <button
+                  type="button"
+                  onClick={handleAddCustomAsset}
+                  className="w-full text-left p-3 text-sm font-bold hover:bg-[#ebf2fa]"
+                  style={{ color: COLORS.highlight }}
+                >
+                  + Añadir "{assetSearch.toUpperCase()}"
+                </button>
+              )}
+            </div>
+          )}
         </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Tipo</label>
+            <div className="flex bg-[#ebf2fa] p-1 rounded-lg border-2" style={{ borderColor: COLORS.surface }}>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, type: 'long' })}
+                className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${formData.type === 'long' ? 'bg-white shadow-sm' : ''}`}
+                style={{ color: formData.type === 'long' ? COLORS.accent : COLORS.brand }}
+              >
+                LONG
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, type: 'short' })}
+                className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${formData.type === 'short' ? 'bg-white shadow-sm' : ''}`}
+                style={{ color: formData.type === 'short' ? COLORS.risk : COLORS.brand }}
+              >
+                SHORT
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Apalancamiento</label>
+            <input
+              type="number"
+              value={formData.leverage}
+              onChange={(e) => setFormData({ ...formData, leverage: Number(e.target.value) })}
+              className="w-full bg-[#ebf2fa] border-2 rounded-lg p-2.5 text-sm outline-none transition-all focus:border-[#76c6ff]"
+              style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+              min="1"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* SECCIÓN 2: EJECUCIÓN (PRECIOS Y FECHAS) */}
+      <div className="p-4 rounded-xl border-2 space-y-4" style={{ borderColor: COLORS.surface }}>
+        <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: COLORS.risk }}>Detalles de Ejecución</h3>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Precio Entrada</label>
+            <input
+              type="number"
+              step="any"
+              value={formData.entryPrice || ''}
+              onChange={(e) => setFormData({ ...formData, entryPrice: Number(e.target.value) })}
+              className="w-full bg-white border-2 rounded-lg p-2.5 text-sm outline-none focus:border-[#76c6ff]"
+              style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+              placeholder="0.00"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Precio Cierre</label>
+            <input
+              type="number"
+              step="any"
+              value={formData.exitPrice || ''}
+              onChange={(e) => setFormData({ ...formData, exitPrice: Number(e.target.value) })}
+              className="w-full bg-white border-2 rounded-lg p-2.5 text-sm outline-none focus:border-[#76c6ff]"
+              style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Fecha Entrada</label>
+            <input
+              type="datetime-local"
+              value={formData.startDate || ''}
+              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+              className="w-full bg-white border-2 rounded-lg p-2.5 text-[10px] outline-none font-bold"
+              style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Fecha Cierre</label>
+            <input
+              type="datetime-local"
+              value={formData.endDate || ''}
+              onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+              className="w-full bg-white border-2 rounded-lg p-2.5 text-[10px] outline-none font-bold"
+              style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>P/L ($)</label>
+          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Beneficio / Pérdida Final ($)</label>
           <input
             type="number"
             step="any"
             value={formData.pnl || ''}
             onChange={(e) => setFormData({ ...formData, pnl: Number(e.target.value) })}
-            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-2.5 text-sm outline-none font-bold transition-all focus:border-[#76c6ff]"
+            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-base outline-none font-black transition-all focus:border-[#76c6ff]"
             style={{ 
               color: formData.pnl && formData.pnl >= 0 ? COLORS.accent : COLORS.risk,
               borderColor: COLORS.surface 
             }}
-            placeholder="50 o -20"
+            placeholder="Ej: 150.50 o -50.00"
             required
           />
         </div>
       </div>
 
-      {/* Switches para SL/TP */}
-      <div className="grid grid-cols-2 gap-3">
-        <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.usedStopLoss ? 'bg-[#ebf2fa]' : 'bg-white'}`} style={{ borderColor: formData.usedStopLoss ? COLORS.brand : COLORS.surface }}>
-          <span className="text-xs font-bold" style={{ color: COLORS.brand }}>Usé SL</span>
-          <input
-            type="checkbox"
-            checked={formData.usedStopLoss}
-            onChange={(e) => setFormData({ ...formData, usedStopLoss: e.target.checked })}
-            className="sr-only"
-          />
-          <div className="w-8 h-4 rounded-full relative transition-colors" style={{ backgroundColor: formData.usedStopLoss ? COLORS.highlight : COLORS.surface }}>
-            <div className={`absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform ${formData.usedStopLoss ? 'translate-x-4' : ''}`}></div>
-          </div>
-        </label>
-        <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.usedTakeProfit ? 'bg-[#ebf2fa]' : 'bg-white'}`} style={{ borderColor: formData.usedTakeProfit ? COLORS.brand : COLORS.surface }}>
-          <span className="text-xs font-bold" style={{ color: COLORS.brand }}>Usé TP</span>
-          <input
-            type="checkbox"
-            checked={formData.usedTakeProfit}
-            onChange={(e) => setFormData({ ...formData, usedTakeProfit: e.target.checked })}
-            className="sr-only"
-          />
-          <div className="w-8 h-4 rounded-full relative transition-colors" style={{ backgroundColor: formData.usedTakeProfit ? COLORS.highlight : COLORS.surface }}>
-            <div className={`absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform ${formData.usedTakeProfit ? 'translate-x-4' : ''}`}></div>
-          </div>
-        </label>
-      </div>
-
-      {/* Evaluación de Estrategia */}
-      <div>
-        <label className="block text-xs font-bold uppercase mb-2" style={{ color: COLORS.brand }}>¿Seguiste tu estrategia?</label>
+      {/* SECCIÓN 3: ESTRATEGIA Y GESTIÓN */}
+      <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setFormData({ ...formData, outcome: 'good' })}
-            className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-bold transition-all ${formData.outcome === 'good' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
-            style={{ 
-              color: formData.outcome === 'good' ? COLORS.brand : COLORS.brand + '80',
-              borderColor: formData.outcome === 'good' ? COLORS.brand : COLORS.surface
-            }}
-          >
-            <CheckCircle className="w-5 h-5" style={{ color: COLORS.accent }} />
-            Ok
-          </button>
-          <button
-            type="button"
-            onClick={() => setFormData({ ...formData, outcome: 'bad' })}
-            className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-bold transition-all ${formData.outcome === 'bad' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
-            style={{ 
-              color: formData.outcome === 'bad' ? COLORS.brand : COLORS.brand + '80',
-              borderColor: formData.outcome === 'bad' ? COLORS.brand : COLORS.surface
-            }}
-          >
-            <XCircle className="w-5 h-5" style={{ color: COLORS.risk }} />
-            No
-          </button>
+          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.usedStopLoss ? 'bg-[#ebf2fa]' : 'bg-white'}`} style={{ borderColor: formData.usedStopLoss ? COLORS.brand : COLORS.surface }}>
+            <span className="text-xs font-bold" style={{ color: COLORS.brand }}>Usé SL</span>
+            <input
+              type="checkbox"
+              checked={formData.usedStopLoss}
+              onChange={(e) => setFormData({ ...formData, usedStopLoss: e.target.checked })}
+              className="sr-only"
+            />
+            <div className="w-8 h-4 rounded-full relative transition-colors" style={{ backgroundColor: formData.usedStopLoss ? COLORS.highlight : COLORS.surface }}>
+              <div className={`absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform ${formData.usedStopLoss ? 'translate-x-4' : ''}`}></div>
+            </div>
+          </label>
+          <label className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.usedTakeProfit ? 'bg-[#ebf2fa]' : 'bg-white'}`} style={{ borderColor: formData.usedTakeProfit ? COLORS.brand : COLORS.surface }}>
+            <span className="text-xs font-bold" style={{ color: COLORS.brand }}>Usé TP</span>
+            <input
+              type="checkbox"
+              checked={formData.usedTakeProfit}
+              onChange={(e) => setFormData({ ...formData, usedTakeProfit: e.target.checked })}
+              className="sr-only"
+            />
+            <div className="w-8 h-4 rounded-full relative transition-colors" style={{ backgroundColor: formData.usedTakeProfit ? COLORS.highlight : COLORS.surface }}>
+              <div className={`absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform ${formData.usedTakeProfit ? 'translate-x-4' : ''}`}></div>
+            </div>
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase mb-2" style={{ color: COLORS.brand }}>¿Seguiste tu estrategia?</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, outcome: 'good' })}
+              className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-bold transition-all ${formData.outcome === 'good' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
+              style={{ 
+                color: formData.outcome === 'good' ? COLORS.brand : COLORS.brand + '80',
+                borderColor: formData.outcome === 'good' ? COLORS.brand : COLORS.surface
+              }}
+            >
+              <CheckCircle className="w-5 h-5" style={{ color: COLORS.accent }} />
+              Acertada
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, outcome: 'bad' })}
+              className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-bold transition-all ${formData.outcome === 'bad' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
+              style={{ 
+                color: formData.outcome === 'bad' ? COLORS.brand : COLORS.brand + '80',
+                borderColor: formData.outcome === 'bad' ? COLORS.brand : COLORS.surface
+              }}
+            >
+              <XCircle className="w-5 h-5" style={{ color: COLORS.risk }} />
+              Fallo
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Notas de la sesión</label>
+          <textarea
+            value={formData.notes || ''}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            placeholder="Psicología, errores cometidos o aciertos..."
+            rows={3}
+            className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-sm outline-none resize-none transition-all focus:border-[#76c6ff]"
+            style={{ color: COLORS.brand, borderColor: COLORS.surface }}
+          ></textarea>
         </div>
       </div>
 
-      {/* Notas */}
-      <div>
-        <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Notas (opcional)</label>
-        <textarea
-          value={formData.notes || ''}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          placeholder="¿Qué sentiste? ¿Por qué entraste?"
-          rows={3}
-          className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-sm outline-none resize-none transition-all focus:border-[#76c6ff]"
-          style={{ color: COLORS.brand, borderColor: COLORS.surface }}
-        ></textarea>
-      </div>
-
-      {/* Botones de acción */}
+      {/* ACCIONES FINALES */}
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
@@ -288,7 +328,7 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
           className="p-4 text-white rounded-2xl font-bold text-sm shadow-md active:scale-95 transition-transform"
           style={{ backgroundColor: COLORS.brand }}
         >
-          Guardar Operación
+          Guardar Trade
         </button>
       </div>
     </form>
