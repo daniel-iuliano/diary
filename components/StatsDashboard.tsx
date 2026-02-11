@@ -29,6 +29,9 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
     const losses = trades.filter(t => t.pnl < 0);
     const goodExecution = trades.filter(t => t.outcome === 'good');
     const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+    const grossProfit = trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
+    const grossLoss = trades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0);
+    const netResult = grossProfit + grossLoss;
     const slUsage = trades.filter(t => t.usedStopLoss).length;
     const tpUsage = trades.filter(t => t.usedTakeProfit).length;
 
@@ -88,6 +91,12 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
           <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: COLORS.brand }}>P/L Promedio</p>
           <p className="text-2xl font-bold" style={{ color: stats.avgPnl >= 0 ? COLORS.accent : COLORS.risk }}>
             ${stats.avgPnl.toFixed(1)}
+          </p>
+          <p className="text-[10px] font-bold mt-1" style={{ color: netResult >= 0 ? COLORS.accent : COLORS.risk }}>
+            Neto: {netResult >= 0 ? '+' : ''}${netResult.toFixed(2)}
+          </p>
+          <p className="text-[9px] font-bold" style={{ color: COLORS.risk + '90' }}>
+            {`Ganancias (${grossProfit.toFixed(2)}) - Pérdidas (${Math.abs(grossLoss).toFixed(2)})`}
           </p>
         </div>
       </div>

@@ -19,7 +19,8 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
   // Use strings for price and pnl state to maintain precision while typing (especially for leading zeros)
   const [entryPriceStr, setEntryPriceStr] = useState(initialData?.entryPrice?.toString() || '');
   const [exitPriceStr, setExitPriceStr] = useState(initialData?.exitPrice?.toString() || '');
-  const [pnlStr, setPnlStr] = useState(initialData?.pnl?.toString() || '');
+  const [pnlMode, setPnlMode] = useState<'profit' | 'loss'>(initialData && initialData.pnl < 0 ? 'loss' : 'profit');
+  const [pnlAmountStr, setPnlAmountStr] = useState(initialData ? Math.abs(initialData.pnl).toString() : '');
 
   const [formData, setFormData] = useState<Partial<Trade>>(initialData || {
     type: 'long',
@@ -65,14 +66,14 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.asset || !entryPriceStr.trim() || pnlStr.trim() === '') {
+    if (!formData.asset || !entryPriceStr.trim() || pnlAmountStr.trim() === '') {
       alert("Por favor completa los campos obligatorios (Activo, Entrada y P/L).");
       return;
     }
 
     const entryPrice = Number(entryPriceStr);
     const exitPrice = exitPriceStr.trim() ? Number(exitPriceStr) : undefined;
-    const pnl = Number(pnlStr);
+    const pnlAmount = Number(pnlAmountStr);
 
     if (!Number.isFinite(entryPrice)) {
       alert('El precio de entrada debe ser un número válido.');
@@ -84,10 +85,12 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
       return;
     }
 
-    if (!Number.isFinite(pnl)) {
-      alert('El valor de Beneficio / Pérdida debe ser un número válido, positivo o negativo.');
+    if (!Number.isFinite(pnlAmount) || pnlAmount < 0) {
+      alert('El monto debe ser un número válido mayor o igual a 0. El selector define si es beneficio o pérdida.');
       return;
     }
+
+    const pnl = pnlMode === 'loss' ? -Math.abs(pnlAmount) : Math.abs(pnlAmount);
 
     const trade: Trade = {
       id: initialData?.id || crypto.randomUUID(),
@@ -249,19 +252,42 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
 
         <div>
           <label className="block text-xs font-bold uppercase mb-1" style={{ color: COLORS.brand }}>Beneficio / Pérdida Final ($)</label>
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => setPnlMode('profit')}
+              className={`py-2 text-xs font-bold rounded-lg border-2 transition-all ${pnlMode === 'profit' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
+              style={{ color: COLORS.accent, borderColor: pnlMode === 'profit' ? COLORS.accent : COLORS.surface }}
+            >
+              Beneficio
+            </button>
+            <button
+              type="button"
+              onClick={() => setPnlMode('loss')}
+              className={`py-2 text-xs font-bold rounded-lg border-2 transition-all ${pnlMode === 'loss' ? 'bg-[#ebf2fa]' : 'bg-white'}`}
+              style={{ color: COLORS.risk, borderColor: pnlMode === 'loss' ? COLORS.risk : COLORS.surface }}
+            >
+              Pérdida
+            </button>
+          </div>
           <input
             type="number"
+            inputMode="decimal"
+            min="0"
             step="any"
-            value={pnlStr}
-            onChange={(e) => setPnlStr(e.target.value)}
+            value={pnlAmountStr}
+            onChange={(e) => setPnlAmountStr(e.target.value)}
             className="w-full bg-[#ebf2fa] border-2 rounded-lg p-3 text-base outline-none font-black transition-all focus:border-[#76c6ff]"
             style={{ 
-              color: Number(pnlStr) >= 0 ? COLORS.accent : COLORS.risk,
+              color: pnlMode === 'profit' ? COLORS.accent : COLORS.risk,
               borderColor: COLORS.surface 
             }}
-            placeholder="Ej: 150.50 o -50.00"
+            placeholder={pnlMode === 'profit' ? 'Ej: 150.50' : 'Ej: 50.00'}
             required
           />
+          <p className="mt-1 text-[10px] font-bold" style={{ color: COLORS.risk + '90' }}>
+            Valor guardado: {pnlMode === 'loss' ? '-' : '+'}{pnlAmountStr || '0'} USD
+          </p>
         </div>
       </div>
 
@@ -341,7 +367,11 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={() => {
+            setPnlMode('profit');
+            setPnlAmountStr('');
+            onCancel();
+          }}
           className="p-4 bg-[#ebf2fa] rounded-2xl font-bold text-sm"
           style={{ color: COLORS.brand }}
         >
