@@ -20,6 +20,9 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
         goodExecutionRate: 0,
         topAssets: [],
         avgPnl: 0,
+        grossProfit: 0,
+        grossLoss: 0,
+        netResult: 0,
         slUsageRate: 0,
         tpUsageRate: 0,
       };
@@ -29,8 +32,8 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
     const losses = trades.filter(t => t.pnl < 0);
     const goodExecution = trades.filter(t => t.outcome === 'good');
     const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
-    const grossProfit = trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
-    const grossLoss = trades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0);
+    const grossProfit = profits.reduce((sum, t) => sum + t.pnl, 0);
+    const grossLoss = losses.reduce((sum, t) => sum + t.pnl, 0);
     const netResult = grossProfit + grossLoss;
     const slUsage = trades.filter(t => t.usedStopLoss).length;
     const tpUsage = trades.filter(t => t.usedTakeProfit).length;
@@ -53,6 +56,9 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
       goodExecutionRate: (goodExecution.length / total) * 100,
       topAssets,
       avgPnl: totalPnl / total,
+      grossProfit,
+      grossLoss,
+      netResult,
       slUsageRate: (slUsage / total) * 100,
       tpUsageRate: (tpUsage / total) * 100,
     };
@@ -92,11 +98,11 @@ const StatsDashboard: React.FC<Props> = ({ trades }) => {
           <p className="text-2xl font-bold" style={{ color: stats.avgPnl >= 0 ? COLORS.accent : COLORS.risk }}>
             ${stats.avgPnl.toFixed(1)}
           </p>
-          <p className="text-[10px] font-bold mt-1" style={{ color: netResult >= 0 ? COLORS.accent : COLORS.risk }}>
-            Neto: {netResult >= 0 ? '+' : ''}${netResult.toFixed(2)}
+          <p className="text-[10px] font-bold mt-1" style={{ color: stats.netResult >= 0 ? COLORS.accent : COLORS.risk }}>
+            Neto: {stats.netResult >= 0 ? '+' : ''}${stats.netResult.toFixed(2)}
           </p>
           <p className="text-[9px] font-bold" style={{ color: COLORS.risk + '90' }}>
-            {`Ganancias (${grossProfit.toFixed(2)}) - Pérdidas (${Math.abs(grossLoss).toFixed(2)})`}
+            {`Ganancias (${stats.grossProfit.toFixed(2)}) - Pérdidas (${Math.abs(stats.grossLoss).toFixed(2)})`}
           </p>
         </div>
       </div>
