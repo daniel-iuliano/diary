@@ -33,6 +33,9 @@ export interface Statistics {
   goodExecutionRate: number;
   topAssets: { asset: string; count: number }[];
   avgPnl: number;
+  grossProfit: number;
+  grossLoss: number;
+  netResult: number;
   slUsageRate: number;
   tpUsageRate: number;
 }
