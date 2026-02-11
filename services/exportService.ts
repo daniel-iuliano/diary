@@ -38,6 +38,13 @@ export const exportTradesToCSV = (trades: Trade[]) => {
 
 export const parseCSVToTrades = async (file: File): Promise<Trade[]> => {
   return new Promise((resolve, reject) => {
+    const parseOptionalNumber = (value: string): number | undefined => {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -63,15 +70,21 @@ export const parseCSVToTrades = async (file: File): Promise<Trade[]> => {
           });
 
           // Validation and Type Casting
-          if (!row.asset || !row.entryPrice) continue;
+          if (!row.asset) continue;
+
+          const entryPrice = parseOptionalNumber(row.entryPrice);
+          const exitPrice = parseOptionalNumber(row.exitPrice);
+          const pnl = parseOptionalNumber(row.pnl);
+
+          if (entryPrice === undefined || pnl === undefined) continue;
 
           trades.push({
             id: row.id || crypto.randomUUID(),
             asset: row.asset.toUpperCase(),
             type: (row.type === 'short' ? 'short' : 'long') as TradeType,
-            entryPrice: parseFloat(row.entryPrice) || 0,
-            exitPrice: row.exitPrice ? parseFloat(row.exitPrice) : undefined,
-            pnl: parseFloat(row.pnl) || 0,
+            entryPrice,
+            exitPrice,
+            pnl,
             leverage: parseInt(row.leverage) || 1,
             usedStopLoss: row.usedStopLoss === '1' || row.usedStopLoss === 'true',
             usedTakeProfit: row.usedTakeProfit === '1' || row.usedTakeProfit === 'true',
