@@ -65,8 +65,27 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.asset || !entryPriceStr || pnlStr === '') {
+    if (!formData.asset || !entryPriceStr.trim() || pnlStr.trim() === '') {
       alert("Por favor completa los campos obligatorios (Activo, Entrada y P/L).");
+      return;
+    }
+
+    const entryPrice = Number(entryPriceStr);
+    const exitPrice = exitPriceStr.trim() ? Number(exitPriceStr) : undefined;
+    const pnl = Number(pnlStr);
+
+    if (!Number.isFinite(entryPrice)) {
+      alert('El precio de entrada debe ser un número válido.');
+      return;
+    }
+
+    if (exitPriceStr.trim() && !Number.isFinite(exitPrice)) {
+      alert('El precio de cierre debe ser un número válido.');
+      return;
+    }
+
+    if (!Number.isFinite(pnl)) {
+      alert('El valor de Beneficio / Pérdida debe ser un número válido, positivo o negativo.');
       return;
     }
 
@@ -74,9 +93,9 @@ const TradeForm: React.FC<Props> = ({ onSave, onCancel, initialData }) => {
       id: initialData?.id || crypto.randomUUID(),
       asset: formData.asset!,
       type: (formData.type as TradeType) || 'long',
-      entryPrice: Number(entryPriceStr),
-      exitPrice: exitPriceStr ? Number(exitPriceStr) : undefined,
-      pnl: Number(pnlStr),
+      entryPrice,
+      exitPrice,
+      pnl,
       leverage: Number(formData.leverage) || 1,
       usedStopLoss: !!formData.usedStopLoss,
       usedTakeProfit: !!formData.usedTakeProfit,
